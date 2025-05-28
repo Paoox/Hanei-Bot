@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: bot-baileys
+    restart: unless-stopped
+    volumes:
+      - ./auth:/usr/src/app/auth
+    environment:
+      - TZ=America/Mexico_City
+
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - 5678:5678
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - WEBHOOK_TUNNEL_URL=https://cfeb-189-157-182-75.ngrok-free.app
+    volumes:
+      - ./n8n_data:/home/node/
