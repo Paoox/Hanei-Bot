@@ -15,7 +15,7 @@ services:
     container_name: n8n
     restart: unless-stopped
     ports:
-      - 5678:5678
+      - 3000:5678
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
