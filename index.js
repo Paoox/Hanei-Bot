@@ -1,7 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const qrcode = require('qrcode-terminal')
-const axios = require('axios') // Usamos axios para enviar datos al webhook
+const axios = require('axios')
 
 const startBot = async () => {
   const authFolder = './auth'
@@ -21,11 +21,12 @@ const startBot = async () => {
     const sender = msg.key.remoteJid
     const text = msg.message.conversation || msg.message.extendedTextMessage?.text
 
+    if (!text) return // Ignora mensajes vacíos o cifrados
+
     console.log('📩 Mensaje recibido:', text)
 
-    // Enviar mensaje al webhook de n8n y usar la respuesta
     try {
-      const response = await axios.post('https://hn8n-production-a5dc8.up.railway.app/webhook-test/331dce23-b65e-48b0-8f48-b0ba35688523', {
+      const response = await axios.post('https://n8n-production-a5dc8.up.railway.app/webhook/331dce23-b65e-48b0-8f48-b0ba35688523', {
         de: sender,
         mensaje: text
       })
@@ -64,4 +65,3 @@ const startBot = async () => {
 }
 
 startBot()
-
