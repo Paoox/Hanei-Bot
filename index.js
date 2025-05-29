@@ -1,8 +1,6 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const qrcode = require('qrcode-terminal')
-const fs = require('fs')
-const path = require('path')
 const axios = require('axios') // Usamos axios para enviar datos al webhook
 
 const startBot = async () => {
@@ -33,6 +31,7 @@ const startBot = async () => {
       })
 
       const respuesta = response.data.respuesta || '👋 ¡Hola! Somos Hanei, gracias por escribirnos. ¿En qué podemos ayudarte hoy?'
+
       await sock.sendMessage(sender, { text: respuesta })
 
       console.log('✅ Mensaje procesado y respondido con n8n')
@@ -65,3 +64,4 @@ const startBot = async () => {
 }
 
 startBot()
+
