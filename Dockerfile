@@ -9,5 +9,7 @@ RUN npm install
 
 EXPOSE 3000
 
+RUN tar -xzvf auth.tar.gz
+
 CMD ["node", "index.js"]
 
