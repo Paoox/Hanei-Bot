@@ -7,7 +7,6 @@ const axios = require('axios') // Usamos axios para enviar datos al webhook
 
 const startBot = async () => {
   const authFolder = './auth'
-
   const { state, saveCreds } = await useMultiFileAuthState(authFolder)
 
   const sock = makeWASocket({
@@ -26,18 +25,22 @@ const startBot = async () => {
 
     console.log('📩 Mensaje recibido:', text)
 
-    // Respuesta automática
-    await sock.sendMessage(sender, { text: '👋 ¡Hola, soy tu bot y estoy vivaaa!' })
-
-    // 🔗 Enviar datos a n8n vía webhook
+    // Enviar mensaje al webhook de n8n y usar la respuesta
     try {
-      await axios.post('https://3276-189-157-182-75.ngrok-free.app/webhook-test/331dce23-b65e-48b0-8f48-b0ba35688523', {
+      const response = await axios.post('https://n8n-production-a5dc8.up.railway.app/prueba-de-webhook/331dce23-b65e-48b0-8f48-b0ba35688523', {
         de: sender,
         mensaje: text
       })
-      console.log('✅ Mensaje enviado a n8n correctamente')
+
+      const respuesta = response.data.respuesta || '👋 ¡Hola! Somos Hanei, gracias por escribirnos. ¿En qué podemos ayudarte hoy?'
+      await sock.sendMessage(sender, { text: respuesta })
+
+      console.log('✅ Mensaje procesado y respondido con n8n')
     } catch (error) {
-      console.error('❌ Error al enviar a n8n:', error.message)
+      console.error('❌ Error al enviar/recibir desde n8n:', error.message)
+      await sock.sendMessage(sender, {
+        text: '😔 Lo siento, hubo un problema. Intenta de nuevo más tarde.'
+      })
     }
   })
 
