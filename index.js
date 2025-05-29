@@ -25,7 +25,7 @@ const startBot = async () => {
 
     // Enviar mensaje al webhook de n8n y usar la respuesta
     try {
-      const response = await axios.post('hn8n-production-a5dc8.up.railway.app/webhook-test/331dce23-b65e-48b0-8f48-b0ba35688523', {
+      const response = await axios.post('https://hn8n-production-a5dc8.up.railway.app/webhook-test/331dce23-b65e-48b0-8f48-b0ba35688523', {
         de: sender,
         mensaje: text
       })
