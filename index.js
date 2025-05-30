@@ -33,12 +33,16 @@ const startBot = async () => {
     console.log(`📩 Mensaje de ${nombre} (${sender}): ${text}`)
 
     try {
-      // Enviar a webhook de n8n
+      // Debug antes de enviar a n8n
+      console.log('🔄 Enviando mensaje a n8n:', { de: sender, nombre, mensaje: text })
+
       const response = await axios.post('https://n8n-production-a5dc8.up.railway.app/webhook/331dce23-b65e-48b0-8f48-b0ba35688523', {
         de: sender,
         nombre,
         mensaje: text
       })
+
+      console.log('✅ Respuesta recibida de n8n:', response.data)
 
       const respuesta = response.data?.respuesta || '👋 ¡Hola! Somos Han\'ei, ¿cómo podemos ayudarte?'
       await sock.sendMessage(sender, { text: respuesta })
@@ -76,12 +80,20 @@ const startBot = async () => {
 app.post('/responder', async (req, res) => {
   const { mensaje, destinatario } = req.body
 
-  if (!sock) return res.status(500).send({ error: 'Bot no conectado' })
-  if (!mensaje || !destinatario) return res.status(400).send({ error: 'Faltan mensaje o destinatario' })
+  console.log('📥 Recibido en /responder:', { mensaje, destinatario })
 
-   try {
+  if (!sock) {
+    console.error('❌ Bot no conectado al intentar enviar mensaje')
+    return res.status(500).send({ error: 'Bot no conectado' })
+  }
+  if (!mensaje || !destinatario) {
+    console.error('❌ Faltan datos en /responder:', { mensaje, destinatario })
+    return res.status(400).send({ error: 'Faltan mensaje o destinatario' })
+  }
+
+  try {
     await sock.sendMessage(destinatario, { text: mensaje })
-    console.log(`📤 Mensaje enviado a ${destinatario} desde endpoint responder: ${mensaje}`)
+    console.log(`📤 Mensaje enviado a ${destinatario} desde endpoint /responder: ${mensaje}`)
     res.send({ ok: true })
   } catch (error) {
     console.error('❌ Error al enviar desde /responder:', error.message, error.stack)
