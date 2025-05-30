@@ -79,13 +79,17 @@ app.post('/responder', async (req, res) => {
   if (!sock) return res.status(500).send({ error: 'Bot no conectado' })
   if (!mensaje || !destinatario) return res.status(400).send({ error: 'Faltan mensaje o destinatario' })
 
-  try {
+   try {
     await sock.sendMessage(destinatario, { text: mensaje })
     console.log(`📤 Mensaje enviado a ${destinatario} desde endpoint responder: ${mensaje}`)
     res.send({ ok: true })
   } catch (error) {
-    console.error('❌ Error al enviar desde /responder:', error)
-    res.status(500).send({ error: 'No se pudo enviar el mensaje' })
+    console.error('❌ Error al enviar desde /responder:', error.message, error.stack)
+    res.status(500).send({ 
+      error: 'No se pudo enviar el mensaje',
+      detalle: error.message,
+      stack: error.stack
+    })
   }
 })
 
