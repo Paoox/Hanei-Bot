@@ -2,12 +2,20 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const { Boom } = require('@hapi/boom')
 const qrcode = require('qrcode-terminal')
 const axios = require('axios')
+const express = require('express')
+
+// Express App
+const app = express()
+app.use(express.json())
+
+// Variable global para el socket
+let sock
 
 const startBot = async () => {
   const authFolder = './auth'
   const { state, saveCreds } = await useMultiFileAuthState(authFolder)
 
-  const sock = makeWASocket({
+  sock = makeWASocket({
     auth: state,
     browser: ['Ubuntu', 'Chrome', '22.04.4'],
   })
@@ -64,4 +72,28 @@ const startBot = async () => {
   })
 }
 
+// Endpoint para recibir respuesta desde n8n y reenviar por WhatsApp
+app.post('/responder', async (req, res) => {
+  const { mensaje, destinatario } = req.body
+
+  if (!sock) {
+    return res.status(500).send({ error: 'Bot no conectado aún' })
+  }
+
+  try {
+    await sock.sendMessage(destinatario, { text: mensaje })
+    console.log('✅ Mensaje enviado desde endpoint responder:', mensaje)
+    res.send({ ok: true })
+  } catch (error) {
+    console.error('❌ Error al enviar desde endpoint responder:', error)
+    res.status(500).send({ error: 'No se pudo enviar mensaje' })
+  }
+})
+
+// Inicia bot y servidor Express
 startBot()
+
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor Express escuchando en el puerto ${PORT}`)
+})
