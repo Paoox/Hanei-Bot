@@ -4,11 +4,9 @@ const qrcode = require('qrcode-terminal')
 const axios = require('axios')
 const express = require('express')
 
-// Express App
 const app = express()
 app.use(express.json())
 
-// Variable global para el socket
 let sock
 
 const startBot = async () => {
@@ -27,27 +25,29 @@ const startBot = async () => {
     if (!msg.message || msg.key.fromMe) return
 
     const sender = msg.key.remoteJid
+    const nombre = msg.pushName || 'Usuario'
     const text = msg.message.conversation || msg.message.extendedTextMessage?.text
 
-    if (!text) return // Ignora mensajes vacíos o cifrados
+    if (!text) return
 
-    console.log('📩 Mensaje recibido:', text)
+    console.log(`📩 Mensaje de ${nombre} (${sender}): ${text}`)
 
     try {
+      // Enviar a webhook de n8n
       const response = await axios.post('https://n8n-production-a5dc8.up.railway.app/webhook/331dce23-b65e-48b0-8f48-b0ba35688523', {
         de: sender,
+        nombre,
         mensaje: text
       })
 
-      const respuesta = response.data.respuesta || '👋 ¡Hola! Somos Hanei, gracias por escribirnos. ¿En qué podemos ayudarte hoy?'
-
+      const respuesta = response.data?.respuesta || '👋 ¡Hola! Somos Han\'ei, ¿cómo podemos ayudarte?'
       await sock.sendMessage(sender, { text: respuesta })
+      console.log('✅ Mensaje procesado y respondido desde n8n')
 
-      console.log('✅ Mensaje procesado y respondido con n8n')
     } catch (error) {
-      console.error('❌ Error al enviar/recibir desde n8n:', error.message)
+      console.error('❌ Error comunicando con n8n:', error.message)
       await sock.sendMessage(sender, {
-        text: '😔 Lo siento, hubo un problema. Intenta de nuevo más tarde.'
+        text: '😔 Hubo un error. Intenta más tarde, por favor.'
       })
     }
   })
@@ -56,7 +56,7 @@ const startBot = async () => {
     const { connection, lastDisconnect, qr } = update
 
     if (qr) {
-      console.log('🔐 Escanea este QR con WhatsApp para conectar el bot:')
+      console.log('🔐 Escanea este QR para conectar el bot:')
       qrcode.generate(qr, { small: true })
     }
 
@@ -72,28 +72,26 @@ const startBot = async () => {
   })
 }
 
-// Endpoint para recibir respuesta desde n8n y reenviar por WhatsApp
+// 🟢 Endpoint para que n8n mande mensajes manuales a WhatsApp
 app.post('/responder', async (req, res) => {
   const { mensaje, destinatario } = req.body
 
-  if (!sock) {
-    return res.status(500).send({ error: 'Bot no conectado aún' })
-  }
+  if (!sock) return res.status(500).send({ error: 'Bot no conectado' })
+  if (!mensaje || !destinatario) return res.status(400).send({ error: 'Faltan mensaje o destinatario' })
 
   try {
     await sock.sendMessage(destinatario, { text: mensaje })
-    console.log('✅ Mensaje enviado desde endpoint responder:', mensaje)
+    console.log(`📤 Mensaje enviado a ${destinatario} desde endpoint responder: ${mensaje}`)
     res.send({ ok: true })
   } catch (error) {
-    console.error('❌ Error al enviar desde endpoint responder:', error)
-    res.status(500).send({ error: 'No se pudo enviar mensaje' })
+    console.error('❌ Error al enviar desde /responder:', error)
+    res.status(500).send({ error: 'No se pudo enviar el mensaje' })
   }
 })
 
-// Inicia bot y servidor Express
 startBot()
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor Express escuchando en el puerto ${PORT}`)
+  console.log(`🚀 Servidor Express escuchando en puerto ${PORT}`)
 })
