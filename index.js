@@ -6,10 +6,7 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const qrcode = require('qrcode-terminal')
 const axios = require('axios')
 const express = require('express')
-const connectDB = require('./config/db');  // Función para conectar a MongoDB
 
-// Conectar a la base de datos
-connectDB();
 
 const app = express()
 // Middleware para interpretar JSON en las solicitudes HTTP
