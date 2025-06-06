@@ -77,4 +77,56 @@ const startBot = async () => {
 
       if (connection === 'close') {
         const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
-        console.log('❌ Conexi
+        console.log('❌ Conexión cerrada. ¿Reconectar?', shouldReconnect)
+        if (shouldReconnect) {
+          startBot()
+        }
+      } else if (connection === 'open') {
+        console.log('✅ ¡Bot conectado a WhatsApp!')
+      }
+    })
+
+  } catch (error) {
+    console.error('❌ Error iniciando el bot:', error)
+    process.exit(1)
+  }
+}
+
+// Endpoint para que n8n envíe mensajes a WhatsApp
+app.post('/responder', async (req, res) => {
+  const { mensaje, destinatario } = req.body
+
+  console.log('📥 Recibido en /responder:', { mensaje, destinatario })
+
+  if (!sock) {
+    console.error('❌ Bot no conectado al intentar enviar mensaje')
+    return res.status(500).send({ error: 'Bot no conectado' })
+  }
+
+  if (!mensaje || !destinatario) {
+    console.error('❌ Faltan datos en /responder:', { mensaje, destinatario })
+    return res.status(400).send({ error: 'Faltan mensaje o destinatario' })
+  }
+
+  try {
+    await sock.sendMessage(destinatario, { text: mensaje })
+    console.log(`📤 Mensaje enviado a ${destinatario} desde endpoint /responder: ${mensaje}`)
+    res.send({ ok: true })
+  } catch (error) {
+    console.error('❌ Error al enviar desde /responder:', error)
+    res.status(500).send({
+      error: 'No se pudo enviar el mensaje',
+      detalle: error.message,
+      stack: error.stack
+    })
+  }
+})
+
+// Iniciar servidor
+const PORT = process.env.PORT || 3000
+;(async () => {
+  await startBot()
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor Express escuchando en puerto ${PORT}`)
+  })
+})()
