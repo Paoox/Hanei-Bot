@@ -83,7 +83,7 @@ const startBot = async () => {
         console.log('✅ Respuesta recibida de n8n:', response.data)
 
         // Obtener respuesta para enviar al usuario, o mensaje default si no hay respuesta
-        const respuesta = response.data?.respuesta || 
+        const respuesta = response.data?.mensaje || 
   `👋 ¡Hola! Somos *Han'ei*, tu tienda de productos personalizados.
 
 ✨ ¿En qué podemos ayudarte hoy?
