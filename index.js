@@ -93,7 +93,7 @@ const startBot = async () => {
 4️⃣ Seguimiento a mi pedido  
 5️⃣ Quiero ser mayorista  
 6️⃣ Busco productos personalizados para mi evento (boda, baby shower, cumpleaños...)  
-7️⃣ Deseo hacer un pedido nuevo  
+7️⃣ Deseo hacer un pedido   
 8️⃣ Tengo otra duda
 
 
